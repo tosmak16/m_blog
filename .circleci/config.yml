@@ -55,3 +55,28 @@ jobs:
       - store_artifacts:
           path: test-reports
           destination: test-reports
+
+  # Triggers deployment to docker-hub
+  deploy:
+    machine: true
+    steps:
+      - checkout
+      - run: docker login -u $DOCKER_USER -p $DOCKER_PASS
+      # build the application image
+      - run: docker build -t tosmak16/m_blog:latest .
+
+      # deploy the image
+      - run: docker push tosmak16/m_blog:latest
+
+
+
+
+workflows:
+  version: 2
+  build_and_deploy:
+    jobs:
+      - build
+      - deploy:
+          requires:
+            - build
+

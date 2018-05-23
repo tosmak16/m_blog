@@ -1,3 +1,5 @@
 psycopg2
 Django
 djangorestframework
+djangorestframework-jwt
+psycopg2-binary

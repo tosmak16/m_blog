@@ -38,6 +38,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'blog_app.apps.BlogAppConfig',
+    'rest_framework'
 ]
 
 MIDDLEWARE = [
@@ -118,6 +120,8 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
+
+AUTH_USER_MODEL = 'blog_app.User'
 
 
 # Static files (CSS, JavaScript, Images)

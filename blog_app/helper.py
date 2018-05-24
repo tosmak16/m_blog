@@ -1,8 +1,7 @@
 import jwt, os
 from django.contrib.auth.models import User
 from .models import User
-from rest_framework import authentication
-from rest_framework import exceptions
+from rest_framework import authentication, permissions, exceptions
 
 
 class VerifyToken(authentication.BaseAuthentication):
@@ -32,6 +31,17 @@ class VerifyToken(authentication.BaseAuthentication):
             user = User.objects.get(username=username)
         except User.DoesNotExist:
             raise exceptions.AuthenticationFailed('No such user')
-        return user, None
+        return user
+
+
+class PostPermission(permissions.BasePermission):
+
+    def has_permission(self, request, view):
+
+        if request.method == "POST":
+            if VerifyToken().authenticate(request):
+                return True
+            return False
+        return True
 
 

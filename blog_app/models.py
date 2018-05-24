@@ -1,9 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import (AbstractBaseUser, PermissionsMixin,
                                         BaseUserManager)
-from django.utils import timezone
 from django.contrib.auth.hashers import make_password
-
+from django.utils import timezone
 
 class UserManager(BaseUserManager):
 
@@ -56,8 +55,16 @@ class User(AbstractBaseUser, PermissionsMixin):
         return f'{self.username} @{self.display_name}'
 
 
+class Post(models.Model):
 
+    title = models.CharField(max_length=50)
+    created_date = models.DateTimeField(default=timezone.now)
+    updated_date = models.DateTimeField(null=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='owner')
+    body = models.CharField(max_length=150)
+    published_date = models.DateTimeField(null=True)
+    is_published = models.BooleanField(default=False)
 
-
-
+    def __str__(self):
+        return self.title
 

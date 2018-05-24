@@ -1,27 +1,50 @@
-from django.http import HttpResponse
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, mixins
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from .serializers import UserSerializer
-from .models import User
+from .serializers import UserSerializer, PostSerializer
+from .models import User, Post
 import jwt, os
-from .helper import VerifyToken
-from rest_framework.views import APIView
+from .helper import VerifyToken, PostPermission
 from datetime import datetime, timedelta
+
 
 from django.contrib.auth import authenticate
 
 
-class IndexViewSet(APIView):
-    authentication_classes = (VerifyToken,)
+class PostViewSet(viewsets.ModelViewSet):
+    queryset = Post.objects.all()
+    serializer_class = PostSerializer
+    permission_classes = (PostPermission,)
 
-    def get(self, request):
-        return HttpResponse("Hello welcome to my blog")
+    @action(methods=['PATCH'], detail=True)
+    def publish(self, request, **kwargs):
+        return self.publish_handler(request)
+
+    @action(methods=['PATCH'], detail=True)
+    def unpublish(self, request, **kwargs):
+        return self.publish_handler(request,publish_type=False,
+                                    success_message='post unpublish successfully',
+                                    error_message='Sorry, you can not unpublish this post')
+
+    def publish_handler(self, request, publish_type=True, success_message=None, error_message=None):
+        authenticated_user=VerifyToken().authenticate(request)
+        post = self.get_object()
+        if post.user_id != authenticated_user.id or post.is_published == publish_type:
+            return Response({'message': error_message or 'Sorry, you can not publish this post'}, status=status.HTTP_403_FORBIDDEN)
+        post.published_date = datetime.utcnow()
+        post.is_published = publish_type
+        post.save()
+        post_content = {'id': post.id, 'title': post.title, 'body': post.body, 'user':post.user_id,
+                        'created_date': post.created_date, 'published_date': post.published_date,
+                        'is_published': post.is_published}
+        return Response({"message": success_message or 'post publish successfully', 'data': post_content}, status=status.HTTP_200_OK)
 
 
-class UserViewSet(viewsets.ModelViewSet):
+class UserViewSet(mixins.ListModelMixin, viewsets.GenericViewSet, mixins.RetrieveModelMixin):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+
+    lookup_field = 'id'
 
     @action(methods=['POST'], detail=False)
     def signup(self, request):
@@ -49,9 +72,18 @@ class UserViewSet(viewsets.ModelViewSet):
         if user is None:
             return Response({'message': 'email and password is incorrect'}, status=status.HTTP_401_UNAUTHORIZED)
         token = jwt.encode({'email': user.email, 'username': user.username,
-                            'exp': datetime.utcnow() + timedelta(minutes=30)},
+                            'exp': datetime.utcnow() + timedelta(days=1)},
                            os.getenv('SECERT_KEY'), algorithm='HS256')
         return Response({'message': 'you have logged in successfully', 'token': token}, status=status_type)
+
+    @action(methods=['get'], detail=True, url_path='posts')
+    def get_single_user_post(self, request, **kwargs):
+        VerifyToken().authenticate(request)
+        user = self.get_object()
+        post=list(Post.objects.filter(user_id=user).values())
+        PostSerializer(post)
+        return Response({'data': post}, status.HTTP_200_OK)
+
 
 
 

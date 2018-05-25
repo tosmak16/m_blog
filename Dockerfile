@@ -15,5 +15,7 @@ RUN pip install -r requirements.txt
 COPY . /usr/src/app
 
 
+EXPOSE 5000
+
 # run server
-CMD ["python", "manage.py", "runserver", "5000"]
+CMD ["gunicorn", "m_blog.wsgi"]

@@ -3,3 +3,4 @@ Django
 djangorestframework
 djangorestframework-jwt
 psycopg2-binary
+gunicorn

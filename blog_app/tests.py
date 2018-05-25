@@ -3,6 +3,7 @@ import json
 
 client = Client()
 
+
 class QuickApiTest(TestCase):
     user_data = {'email': 'tosmak16@gmail.com', 'username': 'tosmak', 'password': '1234asdf'}
 
@@ -30,7 +31,6 @@ class QuickApiTest(TestCase):
         self.assertEqual(response.status_code, 400)
         self.assertEqual(json_response.get('message').get('username'), ['user with this username already exists.'])
         self.assertIsNone(json_response.get('token'))
-
 
     def test_user_login_sucessfully(self):
         self.client.post('/users/signup/', data= self.user_data)

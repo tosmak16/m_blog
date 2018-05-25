@@ -45,3 +45,27 @@ class PostPermission(permissions.BasePermission):
         return True
 
 
+class GetAdminPermissions(permissions.BasePermission):
+
+    def has_permission(self, request, view):
+        if request.method == "GET":
+            authenticated_user = VerifyToken().authenticate(request)
+            if authenticated_user is None or not authenticated_user.is_superuser:
+                raise exceptions.AuthenticationFailed('Sorry, you do not have the permission'
+                                                      ' level to perform this action')
+            return True
+        return True
+
+
+class GetAdminAndUserPermissions(permissions.BasePermission):
+
+    def has_permission(self, request, view):
+        if request.method == "GET":
+            authenticated_user = VerifyToken().authenticate(request)
+            if authenticated_user.is_superuser:
+                return True
+            elif not authenticated_user or not str(authenticated_user.id) in request.path:
+                raise exceptions.AuthenticationFailed('Sorry, you do not have the permission'
+                                                      ' level to perform this action')
+        return True
+

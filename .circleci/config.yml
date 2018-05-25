@@ -68,6 +68,13 @@ jobs:
       # deploy the image
       - run: docker push tosmak16/m_blog:latest
 
+      - run:
+          name: deploy to heroku
+          command: |
+              docker login --username=$HEROKU_LOGIN --password=$HEROKU_API_KEY registry.heroku.com
+              docker tag tosmak16/m_blog:latest registry.heroku.com/$HEROKU_APP_NAME/web
+              docker push registry.heroku.com/$HEROKU_APP_NAME/web
+
 
 
 

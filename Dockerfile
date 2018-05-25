@@ -16,4 +16,4 @@ COPY . /usr/src/app
 
 
 # run server
-CMD ["python", "manage.py", "runserver"]
+CMD ["python", "manage.py", "runserver", "5000"]

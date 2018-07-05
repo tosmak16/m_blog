@@ -1,1 +1,1 @@
-web: python manage.py runserver 5000
+web: gunicorn m_blog.wsgi
